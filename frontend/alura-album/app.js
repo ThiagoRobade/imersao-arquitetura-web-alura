@@ -5,6 +5,20 @@
 // ===================================================
 const API_BASE_URL = "http://localhost:8000";
 
+// Determina a classe de raridade da figurinha baseada no ID
+function obterClasseRaridade(id) {
+    // Ultra Rara / Lendária (Ex: Turing, Guido, Linus)
+    if (id === 1 || id === 6 || id === 16) {
+        return "rarity-legendary";
+    }
+    // Raras (Ex: Criadores de SOs/Hardware, Bancos de Dados)
+    if (id === 2 || id === 4 || id === 5 || id === 11 || id === 12 || id === 17 || id === 18 || id === 19 || id === 20) {
+        return "rarity-rare";
+    }
+    // Comum (Ex: Devs & Pioneiros)
+    return "rarity-common";
+}
+
 // ===================================================
 // FUNÇÃO: Preenche os slots do álbum com imagens da API
 // Esta função é chamada após o álbum ser inicializado.
@@ -40,10 +54,21 @@ async function preencherFigurinhas() {
             // A figurinha existe: insere a imagem
             const figurinha = porId.get(id);
 
+            // Atualiza o nome da figurinha caso mude
+            const slotNameEl = slot.querySelector(".slot-name");
+            if (slotNameEl) {
+                slotNameEl.textContent = figurinha.nome;
+            }
+
             const img = document.createElement("img");
             img.src = `${API_BASE_URL}${figurinha.imagem_url}`;
             img.alt = figurinha.nome;
             img.className = "sticker-img";
+
+            // Adiciona a classe correspondente à raridade e id único
+            const classeRaridade = obterClasseRaridade(id);
+            slot.classList.add(classeRaridade);
+            slot.classList.add(`sticker-id-${id}`);
 
             img.onload = () => slot.classList.add("slot-preenchido");
             img.onerror = () => console.warn(`Imagem não encontrada: ${figurinha.nome}`);
@@ -55,7 +80,7 @@ async function preencherFigurinhas() {
 
     } catch (erro) {
         console.warn("⚠️  Não foi possível conectar à API do backend:", erro.message);
-        console.info("ℹ️  Inicie o servidor: cd backend/dia-3 && uvicorn main:app --reload");
+        console.info("ℹ️  Inicie o servidor: uvicorn main:app --reload");
     }
 }
 
